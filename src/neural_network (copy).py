@@ -15,8 +15,8 @@ class NeuralNetwork():
         """
         a weight matrix of shape (n, m) where n is the number of output neurons (neurons in the next layer) and m is the number of input neurons (neurons in the previous layer)
         """
-        self.weights_1 = np.random.rand(self.images.shape[1], 16)
-        self.weights_2 = np.random.rand(16, 10)
+        self.weights_1 = np.random.rand(16, self.images.shape[1])
+        self.weights_2 = np.random.rand(10, 16)
         # Output same number of images, 10 scores
         self.output = np.zeros((self.images.shape[0], 10))
 
@@ -30,7 +30,7 @@ class NeuralNetwork():
         - SciPy documentation
         """
         if der:
-            return s*(1-s)
+            return x*(1-x)
         return s
 
     def treat_labels(self, label):
@@ -54,36 +54,35 @@ class NeuralNetwork():
         x_test = x_test.reshape(x_test.shape[0],x_test.shape[1]*x_test.shape[2])*255
         y_test = np.asarray(y_test)
         # Prediction part
-        hidden = self.sigmoid(np.dot(x_test, self.weights_1))
-        output = self.sigmoid(np.dot(hidden, self.weights_2))
+        hidden = self.sigmoid(np.dot(x_test, self.weights_1.T))
+        output = self.sigmoid(np.dot(hidden, self.weights_2.T))
         percentage = 0
         for k, prediction in enumerate(output):
+            #print(np.argmax(prediction), self.lbl[k])
             if np.argmax(prediction) == y_test[k]:
                 percentage += 1
         print(f'Porcentagem de acerto: {percentage*100/len(y_test)}%')
-        with open('progress', 'a') as f:
-            f.write(f'Porcentagem de acerto: {percentage*100/len(y_test)}%')
         return output
 
     def feed_forward(self):
         """Compute the output"""
-        self.hidden = self.sigmoid(np.dot(self.images, self.weights_1))
-        self.output = self.sigmoid(np.dot(self.hidden, self.weights_2))
+        self.hidden = self.sigmoid(np.dot(self.images, self.weights_1.T))
+        self.output = self.sigmoid(np.dot(self.hidden, self.weights_2.T))
 
     def back_propagation(self):
         """Adjust the weights by the loss gradient"""
-        error = (self.labels - self.output) # -1 * (labels - output)
-        # Gradient descent of cost function in terms of weights_2
-        g2 = error*self.sigmoid(self.output, der=True)
-        g2 = np.dot(self.hidden.T, g2)
-        # Gradient descent of cost function in terms of weights_1
-        g1 = error*self.sigmoid(self.output, der=True)
-        g1 = np.dot(g1, self.weights_2.T)
-        g1 = g1*self.sigmoid(self.hidden, der=True)
-        g1 = np.dot(self.images.T, g1)
-        # Update values
-        self.weights_1 += g1
-        self.weights_2 += g2
+        error = 2 * (self.labels - self.output) # -1 * (labels - output)
+        # Gradient of weights 2
+        grad_2 = error * self.sigmoid(self.output, der=True)
+        grad_2 = np.dot(grad_2.T, self.hidden)
+        # Gradient of weights 1
+        grad_1 = error * self.sigmoid(self.output, der=True)
+        grad_1 = np.dot(grad_1, self.weights_2)
+        grad_1 = grad_1 * self.sigmoid(self.hidden, der=True)
+        grad_1 = np.dot(grad_1.T, self.images)
+        # Update the weights
+        self.weights_1 += grad_1
+        self.weights_2 += grad_2
 
     def save_state(self):
         """Save trained parameters"""
