@@ -19,7 +19,7 @@ files = {
 
 def train_images():    
     """Convert the binary images file to numpy array. :tp: train, test"""
-    with open(os.pardir + '/dataset/' + files['train_images'], 'rb') as train:
+    with open('dataset/' + files['train_images'], 'rb') as train:
         train.seek(0)
         magic = st.unpack('>4B', train.read(4))
         number_img = st.unpack('>I', train.read(4))[0] # number of images
@@ -34,7 +34,7 @@ def train_images():
 
 def test_images():    
     """Convert the binary images file to numpy array. :tp: train, test"""
-    with open(os.pardir + '/dataset/' + files['test_images'], 'rb') as train:
+    with open('dataset/' + files['test_images'], 'rb') as train:
         train.seek(0)
         magic = st.unpack('>4B', train.read(4))
         number_img = st.unpack('>I', train.read(4))[0] # number of images
@@ -49,14 +49,14 @@ def test_images():
 
 def train_labels():
     """Open the IDX labels file. :tp: train, test"""
-    with open(os.pardir + '/dataset/' + files['train_labels'], 'rb') as labels:
+    with open('dataset/' + files['train_labels'], 'rb') as labels:
         magic, size = st.unpack('>II', labels.read(8))
         lbl_array = np.asarray(st.unpack('>' + 'B' * size, labels.read(size)))
     return lbl_array
 
 def test_labels():
     """Open the IDX labels file. :tp: train, test"""
-    with open(os.pardir + '/dataset/' + files['test_labels'], 'rb') as labels:
+    with open('dataset/' + files['test_labels'], 'rb') as labels:
         magic, size = st.unpack('>II', labels.read(8))
         lbl_array = np.asarray(st.unpack('>' + 'B' * size, labels.read(size)))
     return lbl_array
@@ -67,7 +67,7 @@ def save_img(np_array, name):
         os.mkdir('images')
     except:
         pass
-    imwrite(f'{os.pardir}/images/{name}.jpeg', np_array.astype(np.uint8))
+    imwrite(f'images/{name}.jpeg', np_array.astype(np.uint8))
 
 if __name__ == '__main__':
-    pass
+    train_images()
